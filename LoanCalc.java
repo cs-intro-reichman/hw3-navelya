@@ -1,13 +1,13 @@
 // Computes the periodical payment necessary to pay a given loan.
 public class LoanCalc {
-	
-	static double epsilon = 0.001;  // Approximation accuracy
-	static int iterationCounter;    // Number of iterations 
-	
+
+	static double epsilon = 0.001; // Approximation accuracy
+	static int iterationCounter; // Number of iterations
+
 	// Gets the loan data and computes the periodical payment.
-    // Expects to get three command-line arguments: loan amount (double),
-    // interest rate (double, as a percentage), and number of payments (int).  
-	public static void main(String[] args) {		
+	// Expects to get three command-line arguments: loan amount (double),
+	// interest rate (double, as a percentage), and number of payments (int).
+	public static void main(String[] args) {
 		// Gets the loan data get
 		double loan = Double.parseDouble(args[0]);
 		double rate = Double.parseDouble(args[1]);
@@ -26,51 +26,55 @@ public class LoanCalc {
 	}
 
 	// Computes the ending balance of a loan, given the loan amount, the periodical
-	// interest rate (as a percentage), the number of periods (n), and the periodical payment.
-	private static double endBalance(double loan, double rate, int n, double payment) {	
-		 double monthlyRate = rate / 100.0;
-		 for (int i = 0; i < n; i++) {
-			 loan = (loan - payment) * (1 + monthlyRate);
-		 }
-		 return loan;
+	// interest rate (as a percentage), the number of periods (n), and the
+	// periodical payment.
+	private static double endBalance(double loan, double rate, int n, double payment) {
+		double monthlyRate = rate / 100.0;
+		for (int i = 0; i < n; i++) {
+			loan = (loan - payment) * (1 + monthlyRate);
+		}
+		return loan;
 	}
-	
+
 	// Uses sequential search to compute an approximation of the periodical payment
 	// that will bring the ending balance of a loan close to 0.
 	// Given: the sum of the loan, the periodical interest rate (as a percentage),
 	// the number of periods (n), and epsilon, the approximation's accuracy
 	// Side effect: modifies the class variable iterationCounter.
-    public static double bruteForceSolver(double loan, double rate, int n, double epsilon) {
+	public static double bruteForceSolver(double loan, double rate, int n, double epsilon) {
 		double payment = loan / n;
 		iterationCounter = 0;
 
 		while (endBalance(loan, rate, n, payment) > 0) {
 			iterationCounter++;
-			payment += epsilon; 
+			payment += epsilon;
 		}
 		return payment;
 
-    }
-    
-    // Uses bisection search to compute an approximation of the periodical payment 
+	}
+
+	// Uses bisection search to compute an approximation of the periodical payment
 	// that will bring the ending balance of a loan close to 0.
 	// Given: the sum of the loan, the periodical interest rate (as a percentage),
 	// the number of periods (n), and epsilon, the approximation's accuracy
 	// Side effect: modifies the class variable iterationCounter.
-    public static double bisectionSolver(double loan, double rate, int n, double epsilon) {  
-		double low = 0;
-		double high = loan / n;
-		double payment = (low + high) / 2;
+	public static double bisectionSolver(double loan, double rate, int n, double epsilon) {
 		iterationCounter = 0;
-		while (high - low > epsilon) {
+
+		double L = loan / n;
+		double H = loan;
+		double g = (L + H) / 2;
+
+		while ((H - L) > epsilon) {
 			iterationCounter++;
-			if (endBalance(loan, rate, n, payment) > 0) {
-				low = payment;
+			if (endBalance(loan, rate, n, g) * endBalance(loan, rate, n, L) > 0) {
+				L = g;
 			} else {
-				high = payment;
+				H = g;
 			}
-			payment = (low + high) / 2;
+			g = (L + H) / 2;
 		}
-		return payment;
-    }
+
+		return g;
+	}
 }
